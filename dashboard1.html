@@ -8,15 +8,21 @@ height:100vh;
 transition:0.3s;
 }
 
+/* LIGHT MODE */
+
 body.light{
 background:#E8F8EF;
 color:#222;
 }
 
+/* DARK MODE */
+
 body.dark{
 background:#121212;
 color:white;
 }
+
+/* SIDEBAR */
 
 .sidebar{
 width:280px;
@@ -27,6 +33,8 @@ flex-direction:column;
 align-items:center;
 color:white;
 }
+
+/* LOGO */
 
 .logo{
 width:100px;
@@ -41,6 +49,8 @@ font-size:11px;
 color:gold;
 margin-bottom:60px;
 }
+
+/* QUERY */
 
 .query-box input{
 padding:14px 18px;
@@ -68,6 +78,19 @@ transition:0.3s;
 transform:scale(1.05);
 }
 
+/* CLICKABLE QUERY */
+
+.query{
+cursor:pointer;
+color:#1DB954;
+}
+
+.query:hover{
+text-decoration:underline;
+}
+
+/* LOADING */
+
 .loading{
 display:none;
 margin-top:10px;
@@ -88,6 +111,8 @@ margin:auto;
 0%{transform:rotate(0deg);}
 100%{transform:rotate(360deg);}
 }
+
+/* MAIN */
 
 .main{
 flex:1;
@@ -116,6 +141,8 @@ background:#1DB954;
 color:white;
 }
 
+/* CHAT HISTORY */
+
 .chatbox{
 background:white;
 padding:15px;
@@ -130,10 +157,14 @@ body.dark .chatbox{
 background:#1e293b;
 }
 
+/* DASHBOARD */
+
 .dashboard{
 display:flex;
 gap:40px;
 }
+
+/* KPI CARDS */
 
 .cards{
 display:flex;
@@ -161,6 +192,8 @@ background:#1e293b;
 color:white;
 }
 
+/* CHART */
+
 .chart-container{
 background:white;
 padding:25px;
@@ -172,6 +205,8 @@ width:600px;
 body.dark .chart-container{
 background:#1e293b;
 }
+
+/* INSIGHT */
 
 .insight{
 margin-top:15px;
@@ -218,6 +253,13 @@ Insight will appear after analysis.
 let data=[];
 let chart;
 
+/* HISTORY STORAGE */
+
+let history=[];
+let queryHistory=[];
+
+/* CSV Upload */
+
 document.getElementById("csvFile").addEventListener("change",function(event){
 
 const file=event.target.files[0];
@@ -237,13 +279,19 @@ function generate(){
 
 let q=document.getElementById("query").value;
 
-document.getElementById("chatbox").innerHTML += "<b>User:</b> "+q+"<br>";
+queryHistory.push(q);
+
+history.push(`<span class="query" onclick="runPreviousQuery('${q}')"><b>User:</b> ${q}</span>`);
 
 document.getElementById("loading").style.display="block";
 
 setTimeout(()=>{
 
-processQuery(q);
+let response = processQuery(q);
+
+history.push("<b>AI:</b> " + response);
+
+updateChatHistory();
 
 document.getElementById("loading").style.display="none";
 
@@ -251,6 +299,36 @@ document.getElementById("loading").style.display="none";
 
 }
 
+
+/* UPDATE CHATBOX */
+
+function updateChatHistory(){
+
+let chat=document.getElementById("chatbox");
+
+chat.innerHTML="";
+
+history.forEach(item=>{
+chat.innerHTML += item + "<br>";
+});
+
+chat.scrollTop = chat.scrollHeight;
+
+}
+
+
+/* RUN PREVIOUS QUERY */
+
+function runPreviousQuery(q){
+
+document.getElementById("query").value=q;
+
+generate();
+
+}
+
+
+/* QUERY PROCESSING */
 
 function processQuery(question){
 
@@ -278,9 +356,10 @@ values=Object.values(categories);
 chartType="pie";
 
 response="Showing product category distribution.";
-insightText="Skincare and Makeup categories dominate the product list.";
+insightText="Skincare and Makeup categories dominate the dataset.";
 
 }
+
 
 else if(q.includes("price")){
 
@@ -290,9 +369,10 @@ values=data.map(d=>parseFloat(d.Price));
 chartType="bar";
 
 response="Comparing product prices.";
-insightText="Premium products like serums have higher prices.";
+insightText="Higher priced products belong to skincare treatments.";
 
 }
+
 
 else if(q.includes("rating")){
 
@@ -302,9 +382,10 @@ values=data.map(d=>parseFloat(d.Rating));
 chartType="line";
 
 response="Displaying product ratings.";
-insightText="Most products maintain ratings above 4 indicating strong satisfaction.";
+insightText="Most products maintain ratings above 4.";
 
 }
+
 
 else if(q.includes("brand")){
 
@@ -321,12 +402,12 @@ values=Object.values(brands);
 chartType="pie";
 
 response="Showing brand distribution.";
-insightText="Some brands dominate the Nykaa catalog.";
+insightText="Certain brands dominate the Nykaa catalog.";
 
 }
 
 
-document.getElementById("chatbox").innerHTML += "<b>AI:</b> "+response+"<br>";
+/* KPI CALCULATIONS */
 
 let avgPrice=data.reduce((a,b)=>a+parseFloat(b.Price),0)/data.length;
 let avgRating=data.reduce((a,b)=>a+parseFloat(b.Rating),0)/data.length;
@@ -335,7 +416,13 @@ document.getElementById("revenue").innerText="₹"+avgPrice.toFixed(0);
 document.getElementById("orders").innerText=avgRating.toFixed(1);
 document.getElementById("growth").innerText=data.length;
 
+
+/* INSIGHT */
+
 document.getElementById("insight").innerText="Insight: "+insightText;
+
+
+/* CHART */
 
 const ctx=document.getElementById("chart");
 
@@ -361,8 +448,12 @@ backgroundColor:[
 }
 });
 
+return response;
+
 }
 
+
+/* DARK MODE */
 
 function toggleMode(){
 
